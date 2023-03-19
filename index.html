@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    />
+
+    <style>
+      .completed {
+        text-decoration: line-through;
+        background-color: #d4edda;
+      }
+    </style>
+
+    <title>Todo List</title>
+  </head>
+  <body>
+    <div class="container my-5">
+      <h1>Todo List</h1>
+      <div class="form-group mt-4">
+        <input type="text" class="form-control" id="new-todo" required />
+        <div class="invalid-feedback">Enter a todo item.</div>
+      </div>
+      <button class="btn btn-primary mt-3" id="add-todo">Add todo</button>
+      <ul class="list-group mt-3" id="todo-list"></ul>
+      <button class="btn btn-danger mt-3 d-none" id="remove-completed">
+        Remove Completed Tasks
+      </button>
+    </div>
+
+    <script>
+      const newTodoInput = document.getElementById("new-todo");
+      const addTodoButton = document.getElementById("add-todo");
+      const todoList = document.getElementById("todo-list");
+      const removeCompletedButton = document.getElementById("remove-completed");
+
+      loadTodoList();
+
+      addTodoButton.addEventListener("click", function () {
+        if (newTodoInput.value.trim() === "") {
+          newTodoInput.classList.add("is-invalid");
+          return;
+        }
+        newTodoInput.classList.remove("is-invalid");
+        const newTodoText = newTodoInput.value;
+        const newTodoItem = document.createElement("li");
+        newTodoItem.innerText = newTodoText;
+        newTodoItem.classList.add("list-group-item");
+        todoList.appendChild(newTodoItem);
+        newTodoInput.value = "";
+        saveTodoList();
+      });
+
+      removeCompletedButton.addEventListener("click", function () {
+        const completedTodos = document.querySelectorAll(
+          ".list-group-item.completed"
+        );
+        completedTodos.forEach((todo) => {
+          todo.remove();
+        });
+        toggleRemoveCompletedButtonVisibility();
+        saveTodoList();
+      });
+
+      todoList.addEventListener("click", function (event) {
+        const todoItem = event.target;
+        if (todoItem.tagName === "LI") {
+          todoItem.classList.toggle("completed");
+          toggleRemoveCompletedButtonVisibility();
+        }
+      });
+
+      function toggleRemoveCompletedButtonVisibility() {
+        const completedTodos = document.querySelectorAll(
+          ".list-group-item.completed"
+        );
+        if (completedTodos.length > 0) {
+          removeCompletedButton.classList.remove("d-none");
+        } else {
+          removeCompletedButton.classList.add("d-none");
+        }
+      }
+
+      function saveTodoList() {
+        const todoListItems = todoList.querySelectorAll("li");
+        const todoListArray = Array.from(todoListItems).map((todo) => {
+          return {
+            text: todo.innerText,
+            completed: todo.classList.contains("completed"),
+          };
+        });
+        localStorage.setItem("todoList", JSON.stringify(todoListArray));
+      }
+
+      function loadTodoList() {
+        const todoListArray = JSON.parse(localStorage.getItem("todoList"));
+        if (todoListArray) {
+          todoListArray.forEach((todo) => {
+            const newTodoItem = document.createElement("li");
+            newTodoItem.innerText = todo.text;
+            newTodoItem.classList.add("list-group-item");
+            if (todo.completed) {
+              newTodoItem.classList.add("completed");
+            }
+            todoList.appendChild(newTodoItem);
+          });
+          toggleRemoveCompletedButtonVisibility();
+        }
+      }
+    </script>
+  </body>
+</html>
